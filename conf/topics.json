@@ -1,0 +1,12 @@
+{
+  "topics": [
+    {
+      "salesforce": "contacts",
+      "kafka": "contacts"
+    },
+    {
+      "salesforce": "opportunities",
+      "kafka": "opportunities"
+    }
+  ]
+}

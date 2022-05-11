@@ -32,7 +32,7 @@ class KafkaProducer @Inject()(config: Configuration) {
         .send(new ProducerRecord("contacts",message))
       Await.result(send, 2.seconds)
     } finally {
-      Await.result(producer.close(), 1.minute)
+      Await.result(producer.close(), 5.seconds)
     }
   }
 

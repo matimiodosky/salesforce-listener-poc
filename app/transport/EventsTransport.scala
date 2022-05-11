@@ -10,6 +10,9 @@ import javax.inject.{Inject, Singleton}
 class EventsTransport @Inject() (consumer: SalesforceConsumer, producer: KafkaProducer){
 
   println("starting transport")
-  consumer.subscribe(event => producer.produce(event.toString))
+  consumer.subscribe(event => {
+    println("transporting event " + event.toString)
+    producer.produce(event.toString)
+  })
 
 }

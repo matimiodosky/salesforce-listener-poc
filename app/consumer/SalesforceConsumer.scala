@@ -1,7 +1,6 @@
 package consumer
 
 import javax.inject.{Inject, Singleton}
-import com.salesforce.emp.connector.LoginHelper.login
 import com.salesforce.emp.connector.EmpConnector
 
 import java.util.concurrent.TimeUnit
@@ -11,15 +10,26 @@ import play.api.Configuration
 import java.net.URL
 import java.util.function.Consumer
 import java.util.{Map => JMAp}
+import com.salesforce.emp.connector.BayeuxParameters
+import model.AuthInfo
+import repository.CrmServiceRepository
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 @Singleton
-class SalesforceConsumer @Inject() (config: Configuration) {
+class SalesforceConsumer @Inject() (config: Configuration, crmRepository: CrmServiceRepository) {
 
-  private val url: URL = new URL(config.get[String]("salesforce.url"))
-  private val password = config.get[String]("salesforce.password")
-  private val token = config.get[String]("salesforce.security_token")
-  private val username = config.get[String]("salesforce.username")
-  private val params = login(url, username, s"$password$token")
+  println("getting auth info")
+  private val authInfo: AuthInfo = Await.result(crmRepository.getSalesforceAuthInfo, 10 seconds)
+  println("getting auth info - success")
+
+  val params: BayeuxParameters = new BayeuxParameters() {
+    override def bearerToken: String = authInfo.access_token
+    override def host: URL = new URL(authInfo.instance_url)
+  }
+
   private val connector = new EmpConnector(params)
   private var subscribers: List[Consumer[JMAp[String, AnyRef]]] = List(println(_))
 
